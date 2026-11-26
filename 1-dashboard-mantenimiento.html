@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <title>Control de mantenimiento · PIA</title>
+  <style>
+    :root {
+      --paper: #f5f4ef;
+      --card: #fffefa;
+      --ink: #1c302c;
+      --muted: #78827b;
+      --line: #e7e8df;
+      --green: #2f725f;
+      --green-dark: #1e5144;
+      --lime: #d7ed9f;
+      --coral: #e98469;
+      --gold: #e4b85e;
+      --blue: #7699b4;
+      --shadow: 0 12px 32px rgba(39, 61, 49, .055);
+      --shadow-hover: 0 18px 42px rgba(39, 61, 49, .11);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 10% 3%, rgba(218, 234, 205, .42), transparent 28rem),
+        radial-gradient(ellipse at 95% 26%, rgba(230, 215, 176, .18), transparent 25rem),
+        var(--paper);
+      color: var(--ink);
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    .app { max-width: 1440px; margin: auto; padding: 28px clamp(18px, 4vw, 58px) 48px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 36px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 750; letter-spacing: -.03em; }
+    .brand-mark { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid rgba(255,255,255,.55); border-radius: 14px; color: var(--lime); background: linear-gradient(145deg, #326c57, #183d34); box-shadow: 0 6px 15px rgba(30,81,68,.2); }
+    .brand-mark svg { width: 21px; height: 21px; }
+    .brand small { display: block; color: var(--muted); font-size: 11px; font-weight: 550; letter-spacing: .02em; }
+    .top-actions { display: flex; gap: 9px; }
+    .ghost-btn, .primary-btn {
+      border: 1px solid var(--line); border-radius: 11px; background: var(--card); padding: 10px 14px;
+      color: var(--ink); font-size: 12px; font-weight: 700; transition: .18s ease;
+    }
+    .ghost-btn:hover { border-color: #b6c7bc; transform: translateY(-1px); }
+    .primary-btn { border-color: var(--green-dark); color: white; background: var(--green-dark); }
+    .primary-btn:hover { background: var(--green); transform: translateY(-1px); }
+    .hero {
+      position: relative; isolation: isolate; overflow: hidden;
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+      min-height: 224px; margin-bottom: 24px; padding: 31px 35px;
+      border: 1px solid rgba(255,255,255,.18); border-radius: 24px;
+      color: #fff; background: linear-gradient(112deg, #183f37 0%, #28634f 55%, #3b775e 100%);
+      box-shadow: 0 20px 46px rgba(30, 81, 68, .16);
+    }
+    .hero:before {
+      content: ""; position: absolute; z-index: -1; top: -150px; right: 12%; width: 390px; height: 390px;
+      border: 1px solid rgba(225, 241, 200, .15); border-radius: 50%;
+      box-shadow: 0 0 0 34px rgba(225, 241, 200, .035), 0 0 0 78px rgba(225, 241, 200, .03);
+    }
+    .hero:after {
+      content: ""; position: absolute; z-index: -1; right: -40px; bottom: -76px; width: 360px; height: 210px;
+      background: repeating-linear-gradient(90deg, transparent 0 31px, rgba(225,241,200,.11) 32px 33px),
+        linear-gradient(0deg, rgba(215,237,159,.16), rgba(215,237,159,0));
+      clip-path: polygon(0 76%, 20% 58%, 37% 66%, 54% 26%, 73% 42%, 100% 0, 100% 100%, 0 100%);
+      opacity: .7;
+    }
+    .hero-copy { position: relative; z-index: 1; max-width: 680px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: #d7ed9f; font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    .eyebrow:before { content: ""; width: 19px; height: 1px; background: #d7ed9f; }
+    h1 { margin: 11px 0 10px; font-size: clamp(31px, 4.2vw, 46px); line-height: 1.06; letter-spacing: -.055em; text-shadow: 0 3px 20px rgba(0,0,0,.14); }
+    .hero p { max-width: 610px; margin: 0; color: rgba(245, 250, 239, .78); font-size: 13px; }
+    .hero-art { position: absolute; z-index: -1; right: 145px; bottom: 17px; width: 195px; opacity: .34; }
+    .period { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 9px; padding: 10px 13px; white-space: nowrap; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: rgba(255,255,255,.1); color: #f5f8ee; font-size: 11px; font-weight: 700; backdrop-filter: blur(8px); }
+    .period span { display: block; width: 7px; height: 7px; border-radius: 50%; background: #c9ef83; box-shadow: 0 0 0 4px rgba(215,237,159,.18), 0 0 12px #d7ed9f; }
+    .filters {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; padding: 13px 15px;
+      border: 1px solid rgba(220, 225, 214, .9); border-radius: 15px; background: rgba(255,254,250,.94); box-shadow: var(--shadow);
+    }
+    .filter-label { margin-right: 2px; color: var(--muted); font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .08em; }
+    .filter-control { display: flex; align-items: center; gap: 8px; }
+    .filter-control label { color: var(--muted); font-size: 11px; font-weight: 650; }
+    select { min-width: 158px; border: 1px solid var(--line); border-radius: 9px; padding: 8px 30px 8px 10px; color: var(--ink); background: #fff; outline: none; font-size: 12px; }
+    select:focus { border-color: var(--green); box-shadow: 0 0 0 3px #e6f0eb; }
+    .filter-note { margin-left: auto; color: var(--muted); font-size: 11px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-bottom: 14px; }
+    .kpi { position: relative; overflow: hidden; min-height: 129px; padding: 17px 18px; border: 1px solid var(--line); border-radius: 17px; background: linear-gradient(145deg, #fffefa 45%, #f8faf3); box-shadow: var(--shadow); transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+    .kpi:before { content: ""; position: absolute; top: 0; left: 18px; right: 18px; height: 2px; border-radius: 0 0 3px 3px; background: linear-gradient(90deg, var(--green), rgba(47,114,95,0)); opacity: .55; }
+    .kpi:after { content: ""; position: absolute; right: -24px; bottom: -34px; width: 104px; height: 104px; border: 1px solid rgba(47,114,95,.1); border-radius: 50%; box-shadow: 0 0 0 14px rgba(47,114,95,.035), 0 0 0 29px rgba(47,114,95,.025); }
+    .kpi-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .kpi-icon { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid #e3ecdc; border-radius: 10px; background: linear-gradient(145deg, #f3f8ed, #e7f0e2); color: var(--green); font-size: 14px; box-shadow: 0 3px 8px rgba(47,114,95,.07); }
+    .kpi-value { margin-top: 10px; font-size: 26px; font-weight: 780; letter-spacing: -.05em; }
+    .kpi-foot { margin-top: 1px; color: var(--muted); font-size: 10px; }
+    .grid-main { display: grid; grid-template-columns: minmax(0, 1.58fr) minmax(300px, .92fr); gap: 14px; margin-bottom: 14px; }
+    .grid-secondary { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 14px; margin-bottom: 14px; }
+    .card { position: relative; min-width: 0; padding: 19px; border: 1px solid var(--line); border-radius: 17px; background: rgba(255,254,250,.96); box-shadow: var(--shadow); transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+    .card:hover, .kpi:hover { transform: translateY(-3px); border-color: #d5dfd1; box-shadow: var(--shadow-hover); }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .card h2 { margin: 0; font-size: 14px; letter-spacing: -.02em; }
+    .card-sub { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .tiny-tag { padding: 5px 9px; border: 1px solid #e9eee4; border-radius: 8px; background: linear-gradient(135deg, #f4f6ed, #eef2e7); color: #667568; font-size: 9px; font-weight: 750; white-space: nowrap; }
+    .chart-wrap { width: 100%; }
+    svg.chart { display: block; width: 100%; overflow: visible; }
+    .legend { display: flex; flex-wrap: wrap; gap: 13px; margin: 8px 0 0 46px; color: var(--muted); font-size: 10px; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 8px; height: 8px; border-radius: 3px; background: var(--green); }
+    .legend .second { background: var(--gold); }
+    .legend .third { background: var(--coral); }
+    .rank-list { display: grid; gap: 15px; padding-top: 8px; }
+    .rank-item { display: grid; grid-template-columns: minmax(100px, 1fr) 2fr auto; align-items: center; gap: 10px; }
+    .rank-name { overflow: hidden; color: #48564e; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .rank-track { height: 7px; overflow: hidden; border-radius: 10px; background: #edf0e9; }
+    .rank-fill { height: 100%; border-radius: inherit; background: var(--green); }
+    .rank-value { min-width: 52px; text-align: right; color: var(--ink); font-size: 10px; font-weight: 750; }
+    .insight { display: flex; gap: 12px; margin-top: 20px; padding: 12px; border-radius: 12px; background: #f1f5e8; }
+    .insight-icon { display: grid; flex: 0 0 27px; height: 27px; place-items: center; border-radius: 9px; background: var(--lime); color: var(--green-dark); font-weight: 800; }
+    .insight strong { display: block; margin-bottom: 2px; font-size: 10px; }
+    .insight p { margin: 0; color: #67736a; font-size: 10px; }
+    .model-row { display: grid; grid-template-columns: 1fr 40px 1.35fr; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid #f0f0ea; }
+    .model-row:first-of-type { border-top: 0; }
+    .model-name { font-size: 11px; font-weight: 700; }
+    .model-bar { height: 6px; margin-top: 6px; overflow: hidden; border-radius: 8px; background: #edf0e9; }
+    .model-bar i { display: block; height: 100%; border-radius: inherit; background: var(--coral); }
+    .model-count { font-size: 12px; font-weight: 800; text-align: right; }
+    .model-share { color: var(--muted); font-size: 10px; text-align: right; }
+    .compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; padding: 17px 19px; }
+    .compare-side { display: flex; align-items: center; gap: 13px; }
+    .compare-big { font-size: 25px; font-weight: 800; letter-spacing: -.05em; }
+    .compare-label { color: var(--muted); font-size: 10px; }
+    .compare-label strong { display: block; margin-bottom: 2px; color: var(--ink); font-size: 11px; }
+    .compare-arrow { color: #aab4aa; font-size: 19px; }
+    .quality-bar { height: 7px; margin-top: 7px; border-radius: 10px; background: #edf0e9; }
+    .quality-bar i { display: block; height: 100%; border-radius: inherit; background: var(--green); }
+    .change-note { grid-column: 1/-1; margin: 0; padding-top: 11px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .table-card { padding: 0; overflow: hidden; }
+    .table-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 17px 19px; border-bottom: 1px solid var(--line); }
+    .table-head h2 { margin: 0; font-size: 14px; }
+    .table-tools { display: flex; gap: 8px; }
+    .search { width: 170px; border: 1px solid var(--line); border-radius: 9px; padding: 7px 10px; outline: none; font-size: 11px; }
+    .search:focus { border-color: var(--green); }
+    .table-scroll { overflow: auto; max-height: 310px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { position: sticky; top: 0; z-index: 1; background: #f8f8f3; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .06em; text-align: left; text-transform: uppercase; }
+    th, td { padding: 10px 13px; border-bottom: 1px solid #f0f0ea; }
+    td { color: #4b5850; font-size: 10px; }
+    td:first-child { color: var(--ink); font-weight: 750; }
+    .status { display: inline-flex; padding: 4px 7px; border-radius: 20px; font-size: 9px; font-weight: 750; }
+    .status-ok { color: #3a7457; background: #eaf3e9; }
+    .status-review { color: #966a1d; background: #fbf1d8; }
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding: 10px 17px; color: var(--muted); font-size: 10px; }
+    .pagination button { border: 1px solid var(--line); border-radius: 7px; padding: 5px 8px; background: white; color: var(--ink); font-size: 10px; }
+    .section-title { margin: 28px 0 11px; font-size: 13px; letter-spacing: -.02em; }
+    .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; }
+    .step { position: relative; overflow: hidden; padding: 15px; border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(145deg, var(--card), #f7f8f2); transition: transform .2s ease, box-shadow .2s ease; }
+    .step:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .step-num { display: grid; width: 27px; height: 27px; place-items: center; margin-bottom: 10px; border: 1px solid #dfe9d7; border-radius: 9px; background: linear-gradient(145deg, #f0f7e9, #e3efd9); color: var(--green); font-size: 10px; font-weight: 800; box-shadow: 0 3px 8px rgba(47,114,95,.08); }
+    .step strong { display: block; margin-bottom: 4px; font-size: 11px; }
+    .step p { margin: 0; color: var(--muted); font-size: 10px; }
+    .corrections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+    .correction { padding: 11px 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--card); color: #59665d; font-size: 10px; }
+    .correction b { color: var(--ink); }
+    footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 25px; color: var(--muted); font-size: 10px; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 10; padding: 12px 16px; transform: translateY(90px); opacity: 0; border-radius: 11px; color: white; background: var(--green-dark); box-shadow: var(--shadow); transition: .25s ease; font-size: 12px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-copy { animation: rise-in .7s both; }
+      .kpi { animation: rise-in .55s both; }
+      .kpi:nth-child(2) { animation-delay: .06s; }
+      .kpi:nth-child(3) { animation-delay: .12s; }
+      .kpi:nth-child(4) { animation-delay: .18s; }
+      @keyframes rise-in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    }
+    @media print {
+      body { background: white; }
+      .app { max-width: none; padding: 0; }
+      .hero { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .top-actions, .filters, .toast { display: none !important; }
+      .card, .kpi { break-inside: avoid; box-shadow: none; }
+    }
+    @media (max-width: 900px) {
+      .grid-main, .grid-secondary { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 580px) {
+      .app { padding: 18px 14px 32px; }
+      .topbar { margin-bottom: 25px; }
+      .brand small { display: none; }
+      .ghost-btn { display: none; }
+      .hero { display: block; }
+      .hero { min-height: 250px; padding: 26px 22px; }
+      .hero-art { right: 4px; bottom: 53px; width: 130px; }
+      .period { margin-top: 18px; }
+      .kpis { gap: 8px; }
+      .kpi { min-height: 112px; padding: 13px; }
+      .kpi-value { font-size: 22px; }
+      .filters { align-items: flex-start; }
+      .filter-control { width: 100%; justify-content: space-between; }
+      .filter-control select { flex: 1; }
+      .filter-note { width: 100%; margin: 0; }
+      .compare { grid-template-columns: 1fr; }
+      .compare-arrow { display: none; }
+      .change-note { grid-column: auto; }
+      .steps, .corrections { grid-template-columns: 1fr; }
+      .table-head { align-items: flex-start; flex-direction: column; }
+      .search { width: 100%; }
+      .table-tools { width: 100%; }
+      footer { flex-direction: column; }
+    }
+    @media (max-width: 390px) {
+      .hero { padding: 23px 18px; }
+      .hero-art { opacity: .18; }
+      .period { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M2 21h20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div>PIA · Datos y mantenimiento<small>Control de equipos de cómputo</small></div>
+      </div>
+      <div class="top-actions">
+        <button class="ghost-btn" id="printBtn">↗ &nbsp;Imprimir / PDF</button>
+        <button class="primary-btn" id="csvBtn">↓ &nbsp;Exportar datos</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Panel de análisis · 2026</div>
+        <h1>Una mirada clara al<br>mantenimiento escolar.</h1>
+        <p>Costos, incidencias y calidad de datos en un solo lugar. Explora los resultados consolidados de los dos libros y filtra por área o mes.</p>
+      </div>
+      <svg class="hero-art" viewBox="0 0 220 145" fill="none" aria-hidden="true">
+        <path d="M17 122h190" stroke="#E4F0D8" stroke-opacity=".48" stroke-width="1.5"/>
+        <path d="M31 122V86h24v36M72 122V62h24v60M113 122V77h24v45M154 122V36h24v86" fill="#D7ED9F" fill-opacity=".72"/>
+        <path d="m27 72 49-22 43 12 55-38 23 9" stroke="#F0F5D6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="76" cy="50" r="4" fill="#F0F5D6"/><circle cx="119" cy="62" r="4" fill="#F0F5D6"/>
+        <circle cx="174" cy="24" r="4" fill="#F0F5D6"/>
+      </svg>
+      <div class="period"><span></span> Enero — junio 2026 &nbsp;·&nbsp; datos simulados</div>
+    </section>
+
+    <section class="filters" aria-label="Filtros del dashboard">
+      <span class="filter-label">Explorar</span>
+      <div class="filter-control"><label for="areaFilter">Área</label>
+        <select id="areaFilter">
+          <option value="Todas">Todas las áreas</option>
+          <option>Administración</option>
+          <option>Aula Multimedia</option>
+          <option>Biblioteca</option>
+          <option>Laboratorio de Cómputo</option>
+        </select>
+      </div>
+      <div class="filter-control"><label for="monthFilter">Mes</label>
+        <select id="monthFilter">
+          <option value="all">Todo el periodo</option>
+          <option value="0">Enero</option><option value="1">Febrero</option><option value="2">Marzo</option>
+          <option value="3">Abril</option><option value="4">Mayo</option><option value="5">Junio</option>
+        </select>
+      </div>
+      <button class="ghost-btn" id="resetBtn">Restablecer</button>
+      <span class="filter-note">Las gráficas de costos responden a los filtros. Los indicadores de calidad muestran el panorama general.</span>
+    </section>
+
+    <section class="kpis" aria-label="Indicadores clave">
+      <article class="kpi"><div class="kpi-top">Registros válidos <span class="kpi-icon">✓</span></div><div class="kpi-value" id="kpiValid">50 <small style="font-size:13px;color:#8a948c;font-weight:600">/ 62</small></div><div class="kpi-foot">80.6% del conjunto final</div></article>
+      <article class="kpi"><div class="kpi-top">Costo de mantenimiento <span class="kpi-icon">$</span></div><div class="kpi-value" id="kpiCost">$29,924.81</div><div class="kpi-foot" id="kpiCostFoot">Suma de registros válidos</div></article>
+      <article class="kpi"><div class="kpi-top">Incidencias válidas <span class="kpi-icon">⌁</span></div><div class="kpi-value">52</div><div class="kpi-foot">Promedio: 1.04 por registro válido</div></article>
+      <article class="kpi"><div class="kpi-top">Fuera de operación <span class="kpi-icon">!</span></div><div class="kpi-value">19 <small style="font-size:13px;color:#8a948c;font-weight:600">/ 50</small></div><div class="kpi-foot">16 en mantenimiento · 3 fuera de servicio</div></article>
+    </section>
+
+    <section class="grid-main">
+      <article class="card">
+        <div class="card-head"><div><h2>Cómo evoluciona el gasto</h2><div class="card-sub" id="trendSubtitle">Costo válido por mes y área · MXN</div></div><span class="tiny-tag">TENDENCIA MENSUAL</span></div>
+        <div class="chart-wrap"><svg id="trendChart" class="chart" viewBox="0 0 700 245" role="img" aria-label="Gráfica de costo mensual por área"></svg></div>
+        <div class="legend"><span><i></i>Laboratorio</span><span><i class="second"></i>Biblioteca</span><span><i class="third"></i>Administración</span><span><i style="background:#7699b4"></i>Aula Multimedia</span></div>
+      </article>
+      <article class="card">
+        <div class="card-head"><div><h2>Costo válido por área</h2><div class="card-sub">Distribución del gasto total</div></div><span class="tiny-tag">50 REGISTROS</span></div>
+        <div class="rank-list" id="areaRanks"></div>
+        <div class="insight"><div class="insight-icon">↗</div><div><strong id="areaInsightTitle">Administración lidera el gasto</strong><p id="areaInsight">Concentra cerca del 35% del costo válido total.</p></div></div>
+      </article>
+    </section>
+
+    <section class="grid-secondary">
+      <article class="card">
+        <div class="card-head"><div><h2>Incidencias por tipo de equipo</h2><div class="card-sub">Registros con calidad correcta y equipo catalogado</div></div><span class="tiny-tag">52 INCIDENCIAS</span></div>
+        <div id="models"></div>
+      </article>
+      <article class="card compare">
+        <div class="compare-side">
+          <div><div class="compare-big">21 <span style="font-size:13px;color:#89948a">/ 62</span></div><div class="quality-bar"><i style="width:33.9%;background:#dfa064"></i></div></div>
+          <div class="compare-label"><strong>Libro 1 · diagnóstico</strong>Registros sin problemas<br>según auditoría inicial (33.9%)</div>
+        </div>
+        <div class="compare-arrow">→</div>
+        <div class="compare-side">
+          <div><div class="compare-big">50 <span style="font-size:13px;color:#89948a">/ 62</span></div><div class="quality-bar"><i style="width:80.6%"></i></div></div>
+          <div class="compare-label"><strong>Libro 2 · versión corregida</strong>Registros válidos en el análisis<br>final (80.6%)</div>
+        </div>
+        <p class="change-note">La comparación refleja una mejora tras normalizar y documentar correcciones. Los criterios de calidad no son idénticos entre versiones; no debe interpretarse como una comparación estricta de desempeño.</p>
+      </article>
+    </section>
+
+    <section class="card table-card">
+      <div class="table-head">
+        <div><h2>Resumen mensual</h2><div class="card-sub">Costos consolidados del libro corregido · selecciona un área arriba</div></div>
+        <div class="table-tools"><input id="searchBox" class="search" type="search" placeholder="Buscar mes o área…"></div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Mes</th><th>Laboratorio de Cómputo</th><th>Biblioteca</th><th>Administración</th><th>Aula Multimedia</th><th>Total</th></tr></thead>
+          <tbody id="monthTable"></tbody>
+        </table>
+      </div>
+      <div class="pagination"><span id="tableCount">6 meses · datos corregidos</span><span>Fuente: Datos_Transformados y Dashboard</span></div>
+    </section>
+
+    <h2 class="section-title">Del dato original al análisis final</h2>
+    <section class="steps">
+      <article class="step"><span class="step-num">01</span><strong>Ordenar y normalizar</strong><p>Unificar nombres de áreas, estados, fechas y tipos de datos; mantener intacto el original.</p></article>
+      <article class="step"><span class="step-num">02</span><strong>Validar calidad</strong><p>Revisar costos vacíos o cero, equipo fuera de catálogo, ID repetido, incidencias y responsables.</p></article>
+      <article class="step"><span class="step-num">03</span><strong>Corregir con evidencia</strong><p>Aplicar supuestos documentados y excluir de los totales aquello que no se pudo validar.</p></article>
+      <article class="step"><span class="step-num">04</span><strong>Analizar con cuidado</strong><p>Comparar áreas, meses y equipos sin confundir asociación con causalidad.</p></article>
+    </section>
+
+    <h2 class="section-title">Correcciones documentadas en el segundo libro</h2>
+    <section class="corrections">
+      <div class="correction"><b>REG-022 · Horas:</b> −15 se interpretó como error de captura y se cambió a 15.</div>
+      <div class="correction"><b>REG-037 · Incidencias:</b> −1 se ajustó a 1; requiere verificar el dato original.</div>
+      <div class="correction"><b>REG-041 · Fecha:</b> 31/02/2026 se ajustó a 28/02/2026, último día del mes.</div>
+      <div class="correction"><b>REG-046 · Área:</b> asignada a Laboratorio de Cómputo por el patrón de EQ-005.</div>
+      <div class="correction"><b>REG-059 duplicado:</b> la segunda aparición se renumeró como REG-060.</div>
+      <div class="correction"><b>EQ-099 y costo vacío:</b> no se inventaron valores; se mantuvieron fuera de los indicadores válidos.</div>
+    </section>
+
+    <footer><span>Proyecto Integrador de Aprendizaje · Control de mantenimiento de equipos</span><span>El contenido presenta datos simulados con fines académicos.</span></footer>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const areas = ["Laboratorio de Cómputo", "Biblioteca", "Administración", "Aula Multimedia"];
+    const shortAreas = ["Laboratorio", "Biblioteca", "Administración", "Aula Multimedia"];
+    const colors = ["#2f725f", "#e4b85e", "#e98469", "#7699b4"];
+    const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun"];
+    const monthly = [
+      [2628.22, 1192.20, 2044.82, 213.01],
+      [2105.57, 1428.21, 1349.73, 0],
+      [1998.09, 2699.74, 2364.13, 2309.56],
+      [1776.33, 842.16, 1684.31, 548.83],
+      [794.98, 758.34, 1536.26, 254.99],
+      [0, 0, 1395.33, 0]
+    ];
+    const typeIncidents = [
+      ["Epson PowerLite X49", 19],
+      ["Dell OptiPlex 7090", 18],
+      ["Lenovo ThinkPad E14", 12],
+      ["HP LaserJet Pro", 3]
+    ];
+    const fmt = n => new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", minimumFractionDigits: 2 }).format(n);
+    const compact = n => new Intl.NumberFormat("es-MX", { maximumFractionDigits: 0 }).format(n);
+    const areaFilter = document.getElementById("areaFilter");
+    const monthFilter = document.getElementById("monthFilter");
+    const areaRanks = document.getElementById("areaRanks");
+
+    function currentData() {
+      const selectedArea = areaFilter.value;
+      const selectedMonth = monthFilter.value;
+      return areas.map((area, i) => ({
+        area, color: colors[i],
+        values: monthly.map((row, monthIndex) => row[i]).map((value, monthIndex) =>
+          (selectedArea === "Todas" || selectedArea === area) &&
+          (selectedMonth === "all" || Number(selectedMonth) === monthIndex) ? value : 0)
+      }));
+    }
+    function renderTrend() {
+      const svg = document.getElementById("trendChart");
+      const series = currentData();
+      const totals = months.map((_, i) => series.reduce((sum, item) => sum + item.values[i], 0));
+      const max = Math.max(1000, ...totals) * 1.15;
+      const left = 54, right = 688, top = 14, bottom = 205;
+      const plotHeight = bottom - top, plotWidth = right - left;
+      let out = "";
+      for (let tick = 0; tick <= 4; tick++) {
+        const val = max * tick / 4, y = bottom - plotHeight * tick / 4;
+        out += `<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#eceee7" stroke-width="1"/>`;
+        out += `<text x="${left - 9}" y="${y + 3}" text-anchor="end" fill="#929b92" font-size="9">${val === 0 ? "0" : "$" + compact(val / 1000) + "k"}</text>`;
+      }
+      const groupW = plotWidth / months.length, barW = Math.min(42, groupW * .58);
+      months.forEach((month, m) => {
+        const x = left + m * groupW + (groupW - barW) / 2;
+        let yBase = bottom;
+        series.forEach(s => {
+          const value = s.values[m], h = value / max * plotHeight;
+          if (value > 0) {
+            yBase -= h;
+            out += `<rect x="${x}" y="${yBase}" width="${barW}" height="${h}" rx="3" fill="${s.color}"><title>${s.area}: ${fmt(value)}</title></rect>`;
+          }
+        });
+        out += `<text x="${left + m * groupW + groupW / 2}" y="${bottom + 19}" text-anchor="middle" fill="#78827b" font-size="10">${month}</text>`;
+        if (totals[m] > 0) out += `<text x="${left + m * groupW + groupW / 2}" y="${Math.max(top + 10, bottom - totals[m] / max * plotHeight - 7)}" text-anchor="middle" fill="#516057" font-size="9" font-weight="700">${(totals[m] / 1000).toFixed(1)}k</text>`;
+      });
+      out += `<line x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}" stroke="#dfe3da"/>`;
+      svg.innerHTML = out;
+      const area = areaFilter.value, month = monthFilter.value;
+      document.getElementById("trendSubtitle").textContent =
+        `${area === "Todas" ? "Costo válido por mes y área" : "Costo mensual · " + area}${month === "all" ? "" : " · " + months[Number(month)]} · MXN`;
+      const total = totals.reduce((a, b) => a + b, 0);
+      document.getElementById("kpiCost").textContent = fmt(total);
+      document.getElementById("kpiCostFoot").textContent =
+        area === "Todas" && month === "all" ? "Suma de registros válidos" : `${area === "Todas" ? "Todas las áreas" : area} · ${month === "all" ? "enero–junio" : months[Number(month)]}`;
+      renderRanks();
+      renderTable();
+    }
+    function renderRanks() {
+      const filtered = currentData().map(item => ({ ...item, total: item.values.reduce((a, b) => a + b, 0) }))
+        .filter(item => item.total > 0).sort((a, b) => b.total - a.total);
+      const max = Math.max(1, ...filtered.map(item => item.total));
+      const total = filtered.reduce((sum, item) => sum + item.total, 0);
+      areaRanks.innerHTML = filtered.length ? filtered.map(item => `
+        <div class="rank-item"><span class="rank-name" title="${item.area}">${item.area}</span>
+        <div class="rank-track"><div class="rank-fill" style="width:${item.total / max * 100}%;background:${item.color}"></div></div>
+        <span class="rank-value">${fmt(item.total)}</span></div>`).join("") :
+        '<div class="card-sub">No hay costo para esta selección.</div>';
+      const lead = filtered[0];
+      document.getElementById("areaInsightTitle").textContent = lead ? `${lead.area} lidera el gasto` : "Sin datos en la selección";
+      document.getElementById("areaInsight").textContent = lead ? `Concentra ${Math.round(lead.total / total * 100)}% del costo visible (${fmt(lead.total)}).` : "Prueba con otro filtro de área o mes.";
+    }
+    function renderModels() {
+      const total = typeIncidents.reduce((sum, row) => sum + row[1], 0);
+      document.getElementById("models").innerHTML = typeIncidents.map(([name, count]) => `
+        <div class="model-row"><div><div class="model-name">${name}</div><div class="model-bar"><i style="width:${count / 19 * 100}%"></i></div></div>
+        <div class="model-count">${count}</div><div class="model-share">${Math.round(count / total * 100)}% de incidencias</div></div>`).join("");
+    }
+    function renderTable() {
+      const selectedArea = areaFilter.value, selectedMonth = monthFilter.value;
+      const query = document.getElementById("searchBox").value.trim().toLocaleLowerCase("es");
+      const rows = months.map((month, m) => {
+        const values = monthly[m].map((value, a) => selectedArea === "Todas" || areas[a] === selectedArea ? value : 0);
+        const visible = selectedMonth === "all" || Number(selectedMonth) === m;
+        return { month, values, total: values.reduce((a, b) => a + b, 0), visible };
+      }).filter(row => row.visible && (!query || row.month.toLocaleLowerCase("es").includes(query) || areas.some(a => a.toLocaleLowerCase("es").includes(query))));
+      document.getElementById("monthTable").innerHTML = rows.length ? rows.map(row => `<tr>
+        <td>${row.month} 2026</td>${row.values.map(value => `<td>${fmt(value)}</td>`).join("")}<td><strong>${fmt(row.total)}</strong></td></tr>`).join("") :
+        '<tr><td colspan="6" style="text-align:center;padding:24px;color:#78827b">No hay resultados para la búsqueda.</td></tr>';
+      document.getElementById("tableCount").textContent = `${rows.length} ${rows.length === 1 ? "mes" : "meses"} · datos corregidos`;
+    }
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+    [areaFilter, monthFilter].forEach(el => el.addEventListener("change", renderTrend));
+    document.getElementById("searchBox").addEventListener("input", renderTable);
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      areaFilter.value = "Todas"; monthFilter.value = "all"; document.getElementById("searchBox").value = ""; renderTrend();
+    });
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
+    document.getElementById("csvBtn").addEventListener("click", () => {
+      const head = ["Mes", ...areas, "Total"];
+      const rows = months.map((month, i) => [month + " 2026", ...monthly[i], monthly[i].reduce((a, b) => a + b, 0)]);
+      const csv = [head, ...rows].map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(",")).join("\r\n");
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }));
+      link.download = "resumen-mantenimiento-2026.csv"; link.click(); URL.revokeObjectURL(link.href);
+      showToast("Resumen exportado a CSV");
+    });
+    renderModels();
+    renderTrend();
+  </script>
+</body>
+</html>
